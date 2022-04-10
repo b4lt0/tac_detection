@@ -1,0 +1,68 @@
+import datetime
+
+from sklearn.utils import resample
+
+'''In a Machine Learning problem, make sure to upsample/downsample ONLY AFTER you split into train, test (and validate if you wish).
+ If you do upsample your dataset before you split into train and test,
+ there is a high possibility that your model is exposed to data leakage.'''
+
+'''After your Machine Learning Model is built, it is advisable to test your metric
+on your NOT-UPSAMPLED train dataset. Testing your metric on the NOT-UPSAMPLED
+data set gives you a more realistic estimate of your model than testing it
+on the UPSAMPLED dataset. Personally,
+ I always like to keep a version of the train dataset that wasn’t upsampled.'''
+
+'''time x y z magnitude n_steps avg_between_steps cadence min max mean median variance std_dev zero_crossing_rate skewness kurtosis | TAC | is_intoxicated'''
+'''ok   ok ok ok ok       ok           ok           ok   ok  ok  ok  ok      ok      ok         ok               ok          ok'''
+def from_timestamp_to_datetime(timestamp):
+    timestamp = float(timestamp) / 1000.0
+    return datetime.fromtimestamp(float(timestamp))
+
+alo = df_by_pid[pid]
+alo.index=alo.time.apply(from_timestamp_to_datetime)
+a=[]
+for i in range(4):
+    a.append(alo.resample(str(10**(i+1))+'L').mean())
+
+fig, axs = plt.subplots(4)
+fig.suptitle('different resamples')
+fig, axs = plt.subplots(4)
+for i in range(4):
+    axs[i].plot(a[i].index, a[i].magnitude)
+fig.suptitle('different resamples')
+'''prova ad inserire se la tupla corrisponde ad un passo o no'''
+'''comunque non va bene sottocampionare troppo perchè non si riesce a distinguere il singolo movimento'''
+# df_sales.resample('2H').agg(['min','max', 'sum'])
+'''alo_try1=alo
+alo_try1=alo_try1.resample('1000L').agg({'magnitude':['min', 'max', 'mean', 'median', 'var', 'std']})
+alo_try1.head()'''
+
+'''DataFrame.rolling(window, min_periods=None, center=False,
+ win_type=None, on=None, axis=0, closed=None, method='single')[source]¶'''
+
+'''alo_try1['step']= np.where(alo_try1['magnitude']>1, 1, 0)
+alo_try1=alo_try1.rolling('1000L').agg({'x':['mean'],'y':['mean'],'z':['mean'],
+                                            'magnitude':['min', 'max', 'mean', 'median', 'var', 'std', 'skew','kurt'],
+                                             'step':['sum', ], 'avg_between_steps':['mean'}, 'zero_crossings_x':['sum'], 'cadence':['sum'])
+
+alo_try1['avg_between_steps']= np.where(alo_try1['step']>0, alo_try1['time'].diff(), 0)
+
+alo_try1['cadence']=np.where(alo_try1['step']>0, 1/time(????????), 0)-----------no
+
+alo_try1['zero_crossings_x']=np.where((np.signbit(alo_try1['x'])), 1, 0)
+alo_try1['zero_crossings_x']=np.where((alo_try1['zero_crossings_x'].diff(periods=-1)!=0), 1,0)'''
+#TODO (zcr) do the same for y z
+#TODO (step) treshold=1 gives more than 1-2 steps per second but our magnitude is 3d so there could be movements other than stepping
+
+for pid in pids:
+...     alo=df_by_pid[pid]
+...     print(pid)
+...     a=alo.shape[0]
+...     print(a)
+...     #print(alo.head())
+...     alo=alo.resample('100L').mean()
+...     b=alo.shape[0]
+...     print(b)
+...     #print(alo.head())
+...     print('unsampled is '+str(a/b)+ ' times resampled')
+...     print()
