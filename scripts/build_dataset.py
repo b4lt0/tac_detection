@@ -3,6 +3,10 @@ import pandas as pd
 from pandas import read_csv
 import numpy as np
 import matplotlib.pyplot as plt
+import missingno as msno
+
+
+# conda install -c conda-forge missingno
 
 
 #   time x y z magnitude n_steps avg_between_steps cadence min max mean median variance std_dev zero_crossing_rate
@@ -79,7 +83,7 @@ for pid in pids:
 
     # cadence is speed expressed in steps per second
     df_by_pid[pid]['cadence'] = df_by_pid[pid][
-        'steps']#divide by time
+        'steps']  # divide by time
     # with our 1 second window the cadence (steps per second) is just equal to the number of steps
 
     df_by_pid[pid] = df_by_pid[pid].rolling('1000L').agg(
@@ -108,7 +112,8 @@ for pid in pids:
     # merge each dataframe with the respective tac series
     df_by_pid[pid] = pd.merge_asof(df_by_pid[pid], tac[pid].to_frame(),
                                    left_index=True, right_index=True,
-                                   tolerance=pd.Timedelta("5ms"), # it looks like it doesn't affect merging but it works so i won't change it
+                                   tolerance=pd.Timedelta("5ms"),
+                                   # it looks like it doesn't affect merging but it works so i won't change it
                                    allow_exact_matches=True,
                                    direction='nearest')
     # performs interpolation between TAC readings
@@ -116,15 +121,33 @@ for pid in pids:
     df_by_pid[pid]['TAC_Reading'].interpolate(method='linear', inplace=True, limit_direction='both')
 
     # plot and save plots to see TACs wrt magnitudes (mean of magnitudes in the window)
-    #df_by_pid[pid].plot(y=[('magnitude', 'mean'), 'TAC_Reading'], use_index=True)
-    #plt.savefig('../plots/interpolated/' + pid + '.pdf', bbox_inches='tight')
+    # df_by_pid[pid].plot(y=[('magnitude', 'mean'), 'TAC_Reading'], use_index=True)
+    # plt.savefig('../plots/interpolated/' + pid + '.pdf', bbox_inches='tight')
+
+    # drop every nan value
+    # info before drop
+    # print('\n'+pid)
+    # df_by_pid[pid].info()
+    # msno.bar(df_by_pid[pid])
+    # plt.savefig('../plots/bar/' + pid + '.pdf', bbox_inches='tight')
+    # msno.matrix(df_by_pid[pid])
+    # plt.savefig('../plots/matrix/' + pid + '.pdf', bbox_inches='tight')
+    # msno.heatmap(df_by_pid[pid])
+    # plt.savefig('../plots/heatmap/' + pid + '.pdf', bbox_inches='tight')
+    # plt.show()
+
+    df_by_pid[pid].dropna(inplace=True)
+    # info after drop
+    df_by_pid[pid].info()
 
     # restore the pid column
-    df_by_pid['pid'] = pid
+    df_by_pid[pid]['pid'] = pid
 
     # restore the original dataset stacking the grouped by pid ones
     df = pd.concat([df, df_by_pid[pid]], axis=0)
+    # df.info()
 
-df.to_csv('../data/final_dataset.csv')
+# df.to_csv('../data/final_dataset_drop.csv')
 
 # TODO JB3156 is weird, maybe we should remove it
+# TODO how do we deal with the values dropped that leave a hole in the window that can be big?
