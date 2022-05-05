@@ -46,7 +46,7 @@ for pid_group in df.groupby(df['pid']):
     df_by_pid[pid_group[0]] = pid_group[1]
     df_by_pid[pid_group[0]].drop(['pid'], axis=1, inplace=True)
 
-    # calculate magnitude of the (x,y,z) accelerations
+    # calculate magnitude of the (x,y,z) accelerations x^2+y^2+z^2
     df_by_pid[pid_group[0]]['magnitude'] = np.sqrt(np.square(df_by_pid[pid_group[0]]['x']) +
                                                    np.square(df_by_pid[pid_group[0]]['y']) +
                                                    np.square(df_by_pid[pid_group[0]]['z']))
@@ -94,6 +94,8 @@ for pid in pids:
          'steps': ['sum'],
          'avg_between_steps': ['mean'],
          'zero_crossings_x': ['sum'],
+         'zero_crossings_y': ['sum'],
+         'zero_crossings_z': ['sum'],
          'cadence': ['sum']}
     )
 
@@ -137,6 +139,7 @@ for pid in pids:
     # plt.show()
 
     df_by_pid[pid].dropna(inplace=True)
+
     # info after drop
     df_by_pid[pid].info()
 
@@ -147,7 +150,13 @@ for pid in pids:
     df = pd.concat([df, df_by_pid[pid]], axis=0)
     # df.info()
 
-# df.to_csv('../data/final_dataset_drop.csv')
+# float64 to float16
+for col in df:
+    if df[col].dtype == 'float64':
+        df[col] = df[col].astype('float16')
+
+df.info()
+df.to_csv('../data/final_dataset_drop.csv', )
 
 # TODO JB3156 is weird, maybe we should remove it
 # TODO how do we deal with the values dropped that leave a hole in the window that can be big?
